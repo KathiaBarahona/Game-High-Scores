@@ -26,6 +26,9 @@ public class PlayerService {
 	public void deletePlayer(long id) {
 		playerDAO.deletePlayer(id);
 	}
+	public void deleteAllPlayers() {
+		playerDAO.deleteAllPlayers();
+	}
 	public Player getPlayerById(long id) {
 		return playerDAO.getPlayerById(id);
 	}
