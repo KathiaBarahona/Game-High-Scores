@@ -25,7 +25,7 @@ public class Category implements Serializable {
 	private static final long serialVersionUID = 1L;
 	@Id
 	@Column(name="name")
-	@NotBlank(message="The category's name must not be blank")
+	@NotBlank(message = "The category's name must not be blank!")
 	private String name;
 	@NotNull(message="The category must have a level")
 	private Integer level;
@@ -35,7 +35,6 @@ public class Category implements Serializable {
 	@Id	
 	@ManyToOne
 	@JsonIgnore
-	@NotNull(message="The category must have a player")
 	@JoinColumn(name = "playerId", referencedColumnName = "id")
 	private Player player;
 		
@@ -48,7 +47,11 @@ public class Category implements Serializable {
 		this.level = level;
 		this.experience = experience;
 	}
-	
+	public Category(String name ,Integer level, Integer experience) {
+		this.name = name;
+		this.level = level;
+		this.experience = experience;
+	}
 	public String getName() {
 		return name;
 	}
@@ -61,7 +64,7 @@ public class Category implements Serializable {
 	public void setPlayer(Player player) {
 		setPlayer(player,true);
 	}
-	void setPlayer(Player player,boolean add) {
+	public void setPlayer(Player player,boolean add) {
 		this.player = player;
 		if(player != null && add) {
 			player.addCategory(this, false);
@@ -82,7 +85,7 @@ public class Category implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "Category [name=" + name + ", level=" + level + ", experience=" + experience + ", player=" + player
+		return "Category [name=" + name + ", level=" + level + ", experience=" + experience + ", player=" + player.getName()
 				+ "]";
 	}
 

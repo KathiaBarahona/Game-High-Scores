@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity.BodyBuilder;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,14 +37,20 @@ public class PlayerController {
 	private PlayerService playerService;
 
 	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public BodyBuilder createPlayer(@RequestBody Optional<Player> player) throws URISyntaxException {
+	public ResponseEntity createPlayer(@Valid @RequestBody Optional<Player> player, Errors errors) throws URISyntaxException {
+		if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(ValidatePlayerBuilder.fromBindingErrors(errors));
+        }
 		long playerId = -1;
 		if (player.isPresent()) {
-			playerId = playerService.createPlayer(player.get());
+			Player p = player.get();
+			
+			p.getCategories().forEach(category-> category.setPlayer(p,false));
+			playerId = playerService.createPlayer(p);
 		}
 		player.orElseThrow(() -> new IncorrectPlayerException());
-		URI location = new URI("/players/" + playerId);
-		return ResponseEntity.created(location);
+		URI location = new URI("/players/" + playerId); 
+		return ResponseEntity.created(location).body("Player was created");
 	}
 
 	@RequestMapping(method = RequestMethod.PUT)

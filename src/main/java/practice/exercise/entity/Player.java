@@ -11,6 +11,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -28,6 +29,7 @@ public class Player implements Serializable {
 	@NotBlank(message = "The player's name must not be blank!")
 	private String name;
 	
+	@Valid
 	@NotEmpty(message = "The player must have at least one category")
 	@OneToMany(cascade={CascadeType.ALL}, mappedBy = "player")//1:N relationship
     private List<Category> categories = new ArrayList<>();

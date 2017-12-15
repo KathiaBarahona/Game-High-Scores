@@ -3,13 +3,19 @@ package practice.exercise.entity;
 import java.io.Serializable;
 import java.util.Objects;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotBlank;
+
 
 public class CompositeCategoryId implements Serializable{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	@NotBlank(message = "The player's name must not be blank!")
 	private String name;
+	@NotNull(message="The category must have a player")
 	private Player player;
 	
 	public CompositeCategoryId() {
