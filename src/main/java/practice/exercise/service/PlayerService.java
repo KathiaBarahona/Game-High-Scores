@@ -23,8 +23,8 @@ public class PlayerService {
 	public boolean updatePlayer(Player player,long id) { 
 		return playerDAO.updatePlayer(player,id);
 	}
-	public void deletePlayer(long id) {
-		playerDAO.deletePlayer(id);
+	public boolean deletePlayer(long id) {
+		return playerDAO.deletePlayer(id);
 	}
 	public void deleteAllPlayers() {
 		playerDAO.deleteAllPlayers();

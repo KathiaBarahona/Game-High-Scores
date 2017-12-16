@@ -50,11 +50,15 @@ public class PlayerDAO implements IPlayerDAO {
 	 * @param {long} id
 	 * */
 	@Override 
-	public void deletePlayer(long id) {
-		
-		entityManager.remove(id);
+	public boolean deletePlayer(long id) {
+		Player player = getPlayerById(id);
+		if(!Objects.isNull(player)) {
+			entityManager.remove(player);
+			return true;
+		}
+		return false;
 	}
-	/*
+	/*TODO
 	 * deleteAllPlayers method is in charge of delete all existing player from the db
 	 * @method deleteAllPlayers
 	 * 

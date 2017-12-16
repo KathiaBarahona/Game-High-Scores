@@ -73,9 +73,13 @@ public class PlayerController {
 		return ResponseEntity.ok().body("Player was updated");
 	}
 
-	@RequestMapping(method = RequestMethod.DELETE)
-	public void deletePlayer(@PathVariable("id") long playerId) {
-		playerService.deletePlayer(playerId);
+	@RequestMapping(method = RequestMethod.DELETE, value="/{id}")
+	public ResponseEntity deletePlayer(@PathVariable("id") long playerId) {
+		boolean deleted = playerService.deletePlayer(playerId);
+		if(deleted) {
+			return ResponseEntity.status(HttpStatus.OK).body("Deleted.");
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player Id not found");
 	}
 
 	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
