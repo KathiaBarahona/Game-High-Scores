@@ -9,14 +9,14 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import practice.exercise.entity.Player;
-import practice.exercise.exceptionHandler.ValidatePlayer;
-import practice.exercise.exceptionHandler.ValidatePlayerBuilder;
+import practice.exercise.exceptionHandler.ValidateError;
+import practice.exercise.exceptionHandler.ValidateErrorBuilder;
 
 @ControllerAdvice(assignableTypes = Player.class)
 public class PlayerControllerAdvice  extends ResponseEntityExceptionHandler{
 	@Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        ValidatePlayer error = ValidatePlayerBuilder.fromBindingErrors(exception.getBindingResult());
+        ValidateError error = ValidateErrorBuilder.fromBindingErrors(exception.getBindingResult());
         return super.handleExceptionInternal(exception, error, headers, status, request);
     }
 }

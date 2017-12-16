@@ -11,5 +11,17 @@ import practice.exercise.entity.Category;
 public class CategoryService {
 	@Autowired
 	private CategoryDAO categoryDAO;	
+	public boolean createCategory(long playerId,Category category) {
+		return categoryDAO.createCategory(playerId, category);
+	}
+	public boolean updateCategory(long playerId,Category category) {
+		return categoryDAO.updateCategory(playerId, category);
+	}
+	public Category getCategory(long playerId,String name) {
+		return categoryDAO.getCategory(playerId, name);
+	}
+	public boolean deleteCategory(long playerId,String name) {
+		return categoryDAO.deleteCategory(playerId, name);
+	}
 
 }

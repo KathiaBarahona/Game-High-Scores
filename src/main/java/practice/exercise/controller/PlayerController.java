@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import practice.exercise.entity.Player;
 import practice.exercise.exceptionHandler.IncorrectParameterException;
 import practice.exercise.exceptionHandler.IncorrectPlayerException;
-import practice.exercise.exceptionHandler.ValidatePlayer;
-import practice.exercise.exceptionHandler.ValidatePlayerBuilder;
+import practice.exercise.exceptionHandler.ValidateError;
+import practice.exercise.exceptionHandler.ValidateErrorBuilder;
 import practice.exercise.service.PlayerService;
 
 @RestController
@@ -41,7 +41,7 @@ public class PlayerController {
 	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity createPlayer(@Valid @RequestBody Optional<Player> player, Errors errors) throws URISyntaxException {
 		if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(ValidatePlayerBuilder.fromBindingErrors(errors));
+            return ResponseEntity.badRequest().body(ValidateErrorBuilder.fromBindingErrors(errors));
         }
 		long playerId = -1;
 		if (player.isPresent()) {
@@ -58,7 +58,7 @@ public class PlayerController {
 	@RequestMapping(method = RequestMethod.PUT, value="/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity updatePlayer(@RequestBody Optional<Player> player,@PathVariable("id") long id, Errors errors) {
 		if (errors.hasErrors()) {
-            return ResponseEntity.badRequest().body(ValidatePlayerBuilder.fromBindingErrors(errors));
+            return ResponseEntity.badRequest().body(ValidateErrorBuilder.fromBindingErrors(errors));
         }
 		if (player.isPresent()) {
 			Player p = player.get();
@@ -109,11 +109,11 @@ public class PlayerController {
 	}
 	@ExceptionHandler
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
-	public ValidatePlayer handleException(MethodArgumentNotValidException exception) {
+	public ValidateError handleException(MethodArgumentNotValidException exception) {
 		return createValidationError(exception);
 	}
 
-	private ValidatePlayer createValidationError(MethodArgumentNotValidException exception) {
-		return ValidatePlayerBuilder.fromBindingErrors(exception.getBindingResult());
+	private ValidateError createValidationError(MethodArgumentNotValidException exception) {
+		return ValidateErrorBuilder.fromBindingErrors(exception.getBindingResult());
 	}
 }

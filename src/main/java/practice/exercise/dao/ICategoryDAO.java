@@ -6,5 +6,8 @@ import practice.exercise.entity.Category;
 import practice.exercise.entity.Player;
 
 public interface ICategoryDAO {
-	void createCategory(Category category);
+	boolean createCategory(long playerId,Category category);
+	boolean updateCategory(long playerId,Category category);
+	Category getCategory(long playerId,String name);
+	boolean deleteCategory(long playerId,String name);
 }
