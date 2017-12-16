@@ -31,15 +31,22 @@ import practice.exercise.exceptionHandler.ValidateError;
 import practice.exercise.exceptionHandler.ValidateErrorBuilder;
 import practice.exercise.service.PlayerService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/players")
 public class PlayerController {
+
+
+    private final Logger LOG = LoggerFactory.getLogger(PlayerController.class);
 
 	@Autowired
 	private PlayerService playerService;
 
 	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity createPlayer(@Valid @RequestBody Optional<Player> player, Errors errors) throws URISyntaxException {
+
 		if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(ValidateErrorBuilder.fromBindingErrors(errors));
         }
@@ -56,7 +63,11 @@ public class PlayerController {
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, value="/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity updatePlayer(@RequestBody Optional<Player> player,@PathVariable("id") long id, Errors errors) {
+	public ResponseEntity updatePlayer(@RequestBody Optional<Player> player,@RequestBody byte[] bytes,@PathVariable("id") long id, Errors errors) {
+		System.out.println(id);
+		System.out.println("Aqui revienta, no se porque");
+		System.out.println(player.get()+"-Player shit");
+		System.out.println("No deberia de imprimir");
 		if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(ValidateErrorBuilder.fromBindingErrors(errors));
         }
@@ -92,9 +103,15 @@ public class PlayerController {
 		return null;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Player getPlayerById(@PathVariable("id") long id) {
-		return playerService.getPlayerById(id);
+	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
+	public ResponseEntity<Player> getPlayerById(@PathVariable("id") long id) {
+		LOG.info("Getting a player with id: " +id);
+		Player player = playerService.getPlayerById(id); 
+		if(player == null) {
+			LOG.info("Player with id {} not found",id);
+			return new ResponseEntity<Player>(HttpStatus.NOT_FOUND);
+		}
+		return new ResponseEntity<Player>(player,HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.GET, value = "/ranking" ,produces = MediaType.APPLICATION_JSON_VALUE)

@@ -6,8 +6,10 @@ import java.util.Objects;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
+import javax.persistence.criteria.Root;
 
-import org.hibernate.Hibernate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,8 +69,11 @@ public class PlayerDAO implements IPlayerDAO {
 	 * */
 	@Override 
 	public void deleteAllPlayers() {
-		entityManager.remove(Player.class);
-	}
+		CriteriaBuilder cBuilder = entityManager.getCriteriaBuilder();
+		CriteriaDelete<Player> cq = cBuilder.createCriteriaDelete(Player.class);
+		Root<Player> root = cq.from(Player.class);
+
+		int result = entityManager.createQuery(cq).executeUpdate();	}
 	/*
 	 * getPlayerById method retrieves an specific player from the db
 	 * @method getPlayerById

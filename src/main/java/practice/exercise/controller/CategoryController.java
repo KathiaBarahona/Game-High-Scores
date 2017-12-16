@@ -2,6 +2,8 @@ package practice.exercise.controller;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -9,6 +11,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,9 +34,18 @@ import practice.exercise.service.CategoryService;
 public class CategoryController {
 	@Autowired 
 	CategoryService categoryService;
+	@RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+	public Collection<Category> getCategories(@PathVariable("id") long playerId) {
+		return categoryService.getAllCategories(playerId);
+		
+	}
 	@RequestMapping(method = RequestMethod.GET, value="/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Category getCategory(@PathVariable("id") long playerId, @PathVariable("name") String name) {
-		return categoryService.getCategory(playerId,name);
+	public ResponseEntity<Category> getCategory(@PathVariable("id") long playerId, @PathVariable("name") String name) {
+		Category category = categoryService.getCategory(playerId,name);
+		if(!Objects.isNull(category)){
+			return ResponseEntity.ok().body(category);
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Category());
 		
 	}
 	
@@ -55,21 +67,23 @@ public class CategoryController {
 		
 	}
 	@RequestMapping(method = RequestMethod.PUT,value="/{name}",consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity updateCategory(@PathVariable("id") long playerId, @PathVariable("name")String name, @RequestBody Optional<Category> category, Errors errors) {
+	public ResponseEntity updateCategory(@PathVariable("id") long playerId, @PathVariable("name")String name, @Valid @RequestBody Optional<Category> category, Errors errors) {
+	
 		boolean updated = false;
 		if (errors.hasErrors()) {
             return ResponseEntity.badRequest().body(ValidateErrorBuilder.fromBindingErrors(errors));
         }
 		if(category.isPresent()) {
 			Category category2= category.get();
-			category2.setName(name);
+			System.out.println("Controller");
+			System.out.println(category.get());
 			updated = categoryService.updateCategory(playerId, category2);
 		}
 		category.orElseThrow(() -> new IncorrectPlayerException());
 		if(updated) {
 			return ResponseEntity.ok().body("Category was updated.");
 		}
-		return ResponseEntity.badRequest().body("Category wasn't updated");
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category wasn't updated");
 	}
 	@RequestMapping(method = RequestMethod.DELETE,value="/{name}",consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity deleteCategory(@PathVariable("id") long playerId, @PathVariable("name") String name) {
@@ -77,7 +91,7 @@ public class CategoryController {
 		if(deleted) {
 			return ResponseEntity.ok().body("Category was deleted");
 		}
-		return ResponseEntity.badRequest().body("Category wasn't deleted");
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category wasn't deleted");
 	}
 	@ExceptionHandler
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)

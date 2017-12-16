@@ -31,7 +31,7 @@ public class Player implements Serializable {
 	
 	@Valid
 	@NotEmpty(message = "The player must have at least one category")
-	@OneToMany(cascade={CascadeType.ALL}, mappedBy = "player")//1:N relationship
+	@OneToMany( mappedBy = "player",orphanRemoval=true)//1:N relationship
     private List<Category> categories = new ArrayList<>();
 	
 	public Player() {}
@@ -43,7 +43,9 @@ public class Player implements Serializable {
 	public long  getId() {
 		return id;
 	}
-
+    public void setId(long id) {
+    	this.id = id; 
+    }
 	public String getName() {
 		return name;
 	}

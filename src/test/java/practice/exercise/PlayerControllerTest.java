@@ -1,15 +1,21 @@
 package practice.exercise;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,17 +23,26 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import practice.exercise.controller.PlayerController;
 import practice.exercise.dao.PlayerDAO;
 import practice.exercise.entity.Category;
 import practice.exercise.entity.Player;
@@ -37,32 +52,26 @@ import practice.exercise.service.PlayerService;
 @SpringBootTest(classes = HighScoreBoardApiApplication.class)
 @WebAppConfiguration
 public class PlayerControllerTest { 
-	private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
-			MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
+	private MediaType contentType = MediaType.APPLICATION_JSON_UTF8;
 
 	private MockMvc mockMvc;
 	private String playerName = "kats";
 	private Player player;
-	@Autowired
-	private WebApplicationContext webApplicationContext;
-	private HttpMessageConverter mappingJackson2HttpMessageConverter;
-	@Autowired
+	private String baseURL = "/players";
+
+	@Mock
 	private PlayerService playerService;
+	@InjectMocks
+	private PlayerController playerController;
+	
 	@Autowired
 	private PlayerDAO playerDAO;
 
-	@Autowired
-	void setConverters(HttpMessageConverter<?>[] converters) {
-
-		this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream()
-				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
-
-		assertNotNull("the JSON message converter must not be null", this.mappingJackson2HttpMessageConverter);
-	}
-
 	@Before
 	public void setup() throws Exception {
-		this.mockMvc = webAppContextSetup(webApplicationContext).build();
+		MockitoAnnotations.initMocks(this);
+		this.mockMvc  = MockMvcBuilders.standaloneSetup(playerController).build();
+	
 		//this.playerService.deleteAllPlayers();
 		player = new Player(this.playerName);
 		List<Category> categories = new ArrayList<Category>(
@@ -77,24 +86,24 @@ public class PlayerControllerTest {
 	}
 	@Test
 	public void createEmptyPlayer() throws Exception{
-		mockMvc.perform(post("/players")
-				.content(this.json("{}"))
-				.contentType(contentType))
+		mockMvc.perform(post(baseURL)
+				.contentType(contentType)
+				.content(this.json("{}")))
 		        .andExpect(status().isBadRequest());
 	}
 	@Test	
 	public void createPlayerWithNoName() throws Exception{
-		 mockMvc.perform(post("/players")
-	                .content(this.json(new Player()))
-	                .contentType(contentType))
+		 mockMvc.perform(post(baseURL)
+				 	.contentType(contentType)
+	                .content(this.json(new Player())))
 	                .andExpect(status().isBadRequest());
 	}
 	
 	@Test 
 	public void createPlayerWithNoCategories() throws Exception{
-		mockMvc.perform(post("/players")
-			    .content(this.json(new Player("Kats2")))
-			    .contentType(contentType))
+		mockMvc.perform(post(baseURL)
+			    .contentType(contentType)
+			    .content(this.json(new Player("Kats2"))))
 			    .andExpect(status().isBadRequest());
 	}
 	@Test
@@ -107,54 +116,70 @@ public class PlayerControllerTest {
 						new Category(playerCreate, "Cooking", (int) (Math.random() * 10), (int) (Math.random() * 10)),
 						new Category(playerCreate, "Crafting", (int) (Math.random() * 10), (int) (Math.random() * 10))));
 		playerCreate.setCategories(categories);
-		mockMvc.perform(post("/players")
-				.content(this.json(playerCreate))
-				.contentType(contentType))
+		mockMvc.perform(post(baseURL)
+				.contentType(contentType)
+				.content(this.json(playerCreate)))
     			.andExpect(status().isCreated());
 	}
 	@Test
 	public void updateNonExistentPlayer() throws Exception{
-		mockMvc.perform(put("/players/100")
-				.content(this.json(this.player))
-				.contentType(contentType))
+		String url = baseURL+"/{id}";
+		mockMvc.perform(put(url,100)
+				.contentType(contentType)
+				.content(this.json(this.player)))
 				.andExpect(status().isNotFound());
 	}
 	@Test
 	public void updatePlayerWithEmptyName() throws Exception{
-		mockMvc.perform(put("/players/1")
+		String url = baseURL+"/{id}";
+		mockMvc.perform(put(url,this.player.getId())
 				.content(this.json(new Player("")))
 				.contentType(contentType))
 				.andExpect(status().isBadRequest());
 	}
 	@Test
 	public void updatePlayer() throws Exception{
-		mockMvc.perform(put("/players/1")
-				.content(this.json(new Player("Kats Update")))
-				.contentType(contentType))
+		this.player.setName("Kats Udpdate");
+		when(playerService.getPlayerById(this.player.getId())).thenReturn(this.player);
+		doNothing().when(playerService).updatePlayer(this.player, this.player.getId());
+		String url = baseURL+"/{id}";
+		mockMvc.perform(put(url,this.player.getId())
+				.contentType(contentType)
+				.content(this.json(this.player)))
 				.andExpect(status().isOk());
 	}
 	@Test
 	public void deleteNonExistentPlayer() throws Exception{
-		mockMvc.perform(delete("/players/100")
+		String url = baseURL+"/{id}";
+		mockMvc.perform(delete(url,100)
 				.contentType(contentType))
 				.andExpect(status().isNotFound());
 	}
 	@Test
 	public void deletePlayer() throws Exception{
-		mockMvc.perform(delete("/players/1")
+		String url = baseURL+"/{id}";
+		mockMvc.perform(delete(url,this.player.getId())
 				.contentType(contentType))
 				.andExpect(status().isOk());
 	}
 	
 	@Test
 	public void getPlayerById() throws Exception{
-		mockMvc.perform(get("/players/1")
-				.contentType(contentType))
-				.andExpect(status().isOk());
+		String url = baseURL+"/{id}";
+		Player player = new Player("Tom");
+		player.setId(1);
+		when(playerService.getPlayerById(player.getId())).thenReturn(player);
+		mockMvc.perform(get(url,this.player.getId()))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(jsonPath("$.id",is(1)))
+				.andExpect(jsonPath("$.name",is("Tom")));
+		verify(playerService,times(1)).getPlayerById(player.getId());
+		verifyNoMoreInteractions(playerService); 
 	}
 	@Test
 	public void getTopPlayersOverallWithNoParameters() throws Exception{
-		mockMvc.perform(get("/players/overall")
+		mockMvc.perform(get("/players/ranking")
 				.contentType(contentType))
 				.andExpect(status().isBadRequest());
 	}
@@ -195,10 +220,11 @@ public class PlayerControllerTest {
 				.andExpect(status().isOk());
 	}
 	protected String json(Object o) throws IOException {
-        MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-        this.mappingJackson2HttpMessageConverter.write(
-                o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-        return mockHttpOutputMessage.getBodyAsString();
+		 ObjectMapper mapper = new ObjectMapper();
+		    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+		    ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+		    String requestJson=ow.writeValueAsString(o);
+        return requestJson;
     }
 
 }

@@ -1,13 +1,13 @@
 package practice.exercise.dao;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.junit.experimental.categories.Categories;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,6 +57,8 @@ public class CategoryDAO implements ICategoryDAO{
 	@Override
 	public boolean updateCategory(long playerId, Category category) {
 		Category oldCategory = this.getCategory(playerId, category.getName());
+		System.out.println(playerId);
+		System.out.println(category);
 		if(!Objects.isNull(oldCategory)) {
 			if(!Objects.isNull(category.getExperience())) {
 				oldCategory.setExperience(category.getExperience());
@@ -101,13 +103,19 @@ public class CategoryDAO implements ICategoryDAO{
 					entityManager.remove(categories.get(c));
 					p.getCategories().remove(c);
 					entityManager.flush();
-					break;
+					return true;
 				}
 			}
 			
-			
-			return true;
 		}
 		return false;
+	}
+	@Override
+	public Collection<Category> getAllCategories(long playerId) {
+		Player p = playerDAO.getPlayerById(playerId);
+		if(Objects.isNull(p)) {
+			return new ArrayList<>();
+		}
+		return p.getCategories();
 	}
 }
