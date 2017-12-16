@@ -103,7 +103,7 @@ public class PlayerController {
 		return null;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
+	@RequestMapping(value = "/{id}",method = RequestMethod.GET)
 	public ResponseEntity<Player> getPlayerById(@PathVariable("id") long id) {
 		LOG.info("Getting a player with id: " +id);
 		Player player = playerService.getPlayerById(id); 
@@ -114,16 +114,27 @@ public class PlayerController {
 		return new ResponseEntity<Player>(player,HttpStatus.OK);
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/ranking" ,produces = MediaType.APPLICATION_JSON_VALUE)
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/ranking")
 	public ResponseEntity<Collection<Player>> getTopPlayersByCategory(@RequestParam("category") Optional<String> category,
 			@RequestParam("page") Optional<Integer> page) {
+	
 		if (page.isPresent() && category.isPresent()) {
-			return ResponseEntity.ok().body(playerService.getTopPlayersByCategory(category.get(), page.get()));
+			LOG.info("Getting all top players for {} category, {} page.", category.get(),page.get());
+			Collection<Player> players = playerService.getTopPlayersByCategory(category.get(), page.get());
+			if(players.size() == 0) {
+				LOG.info("No players found.");
+				return new ResponseEntity<Collection<Player>>(HttpStatus.NO_CONTENT);
+			}
+			return new ResponseEntity<Collection<Player>>(players,HttpStatus.OK);
 		}
 		category.orElseThrow(() -> new IncorrectParameterException("category"));
 		page.orElseThrow(() -> new IncorrectParameterException("page"));
-		return ResponseEntity.ok().body(new ArrayList<>());
+		return new ResponseEntity<Collection<Player>>(HttpStatus.BAD_REQUEST);
 	}
+	
+	
+	
 	@ExceptionHandler
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public ValidateError handleException(MethodArgumentNotValidException exception) {
