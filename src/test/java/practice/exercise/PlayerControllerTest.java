@@ -1,6 +1,7 @@
 package practice.exercise;
 
 import static org.junit.Assert.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -131,6 +132,19 @@ public class PlayerControllerTest {
 				.contentType(contentType))
 				.andExpect(status().isOk());
 	}
+	@Test
+	public void deleteNonExistentPlayer() throws Exception{
+		mockMvc.perform(delete("/players/100")
+				.contentType(contentType))
+				.andExpect(status().isNotFound());
+	}
+	@Test
+	public void deletePlayer() throws Exception{
+		mockMvc.perform(delete("/players/1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	
 	protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
         this.mappingJackson2HttpMessageConverter.write(
