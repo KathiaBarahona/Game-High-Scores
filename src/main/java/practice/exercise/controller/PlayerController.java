@@ -2,6 +2,7 @@ package practice.exercise.controller;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -91,20 +92,21 @@ public class PlayerController {
 		return null;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/{id}")
+	@RequestMapping(method = RequestMethod.GET, value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public Player getPlayerById(@PathVariable("id") long id) {
 		return playerService.getPlayerById(id);
 	}
 
-	@RequestMapping(method = RequestMethod.GET, value = "/overall")
-	public Collection<Player> getTopPlayersOverallByPage(@RequestParam("page") Optional<Integer> page) {
-		if (page.isPresent()) {
-			return playerService.getTopPlayersOverallByPage(page.get());
+	@RequestMapping(method = RequestMethod.GET, value = "/ranking" ,produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Collection<Player>> getTopPlayersByCategory(@RequestParam("category") Optional<String> category,
+			@RequestParam("page") Optional<Integer> page) {
+		if (page.isPresent() && category.isPresent()) {
+			return ResponseEntity.ok().body(playerService.getTopPlayersByCategory(category.get(), page.get()));
 		}
+		category.orElseThrow(() -> new IncorrectParameterException("category"));
 		page.orElseThrow(() -> new IncorrectParameterException("page"));
-		return null;
+		return ResponseEntity.ok().body(new ArrayList<>());
 	}
-
 	@ExceptionHandler
 	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	public ValidatePlayer handleException(MethodArgumentNotValidException exception) {

@@ -153,14 +153,44 @@ public class PlayerControllerTest {
 				.andExpect(status().isOk());
 	}
 	@Test
-	public void getTopPlayersOverallWithNoPage() throws Exception{
+	public void getTopPlayersOverallWithNoParameters() throws Exception{
 		mockMvc.perform(get("/players/overall")
 				.contentType(contentType))
 				.andExpect(status().isBadRequest());
 	}
 	@Test
-	public void getTopPlayersOverallWithPage() throws Exception{
-		mockMvc.perform(get("/players/overall?page=1")
+	public void getTopPlayersOverall() throws Exception{
+		mockMvc.perform(get("/players/ranking?category=Overall&page=1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void getTopPlayersAttack() throws Exception{
+		mockMvc.perform(get("/players/ranking?category=Attack&page=1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void getTopPlayersDefense() throws Exception{
+		mockMvc.perform(get("/players/ranking?category=Defense&page=1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void getTopPlayersMagic() throws Exception{
+		mockMvc.perform(get("/players/ranking?category=Magic&page=1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void getTopPlayersCooking() throws Exception{
+		mockMvc.perform(get("/players/ranking?category=Cooking&page=1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void getTopPlayersCrafting() throws Exception{
+		mockMvc.perform(get("/players/ranking?category=Crafting&page=1")
 				.contentType(contentType))
 				.andExpect(status().isOk());
 	}

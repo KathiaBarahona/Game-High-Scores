@@ -11,5 +11,5 @@ public interface IPlayerDAO {
 	void deleteAllPlayers();
 	Player getPlayerById(long id);
 	Collection<Player> getPlayersByName(String name);
-	Collection<Player> getTopPlayersOverallByPage(int page); 
+	Collection<Player> getTopPlayersByCategory(String category,int page); 
 }

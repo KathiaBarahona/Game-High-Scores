@@ -5,7 +5,9 @@ import java.util.Objects;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,11 +99,19 @@ public class PlayerDAO implements IPlayerDAO {
 	 * */
 	@Override
 	@SuppressWarnings("unchecked")
-	public Collection<Player> getTopPlayersOverallByPage(int page){		
+	public Collection<Player> getTopPlayersByCategory(String category,int page){		
 		int limit = 10;
 		String hql = "SELECT new Ranking(player.id AS playerId, player.name AS playerName, SUM(category.level) AS overallLevel, "+
 		"SUM(category.experience) AS overallExperience)"+
-		" FROM Player AS player INNER JOIN player.categories AS category GROUP BY player.id,player.name ORDER BY overallExperience DESC";
-		return entityManager.createQuery(hql).setFirstResult((page-1)*limit).setMaxResults(limit).getResultList();
+		" FROM Player AS player INNER JOIN player.categories AS category ";
+		if(!category.equals("Overall")) {
+			hql += " WHERE category.name = :category";
+		}
+		hql+=" GROUP BY player.id,player.name ORDER BY overallExperience DESC";
+		Query query = entityManager.createQuery(hql);
+		if(!category.equals("Overall")) {
+			query.setParameter("category", category);
+		}
+		return query.setFirstResult((page-1)*limit).setMaxResults(limit).getResultList();
 	}
 }

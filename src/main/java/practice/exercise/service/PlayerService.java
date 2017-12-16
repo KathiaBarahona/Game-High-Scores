@@ -35,7 +35,7 @@ public class PlayerService {
 	public Collection<Player> getPlayersByName(String name){
 		return playerDAO.getPlayersByName(name);
 	}
-	public Collection<Player> getTopPlayersOverallByPage(int page){
-		return playerDAO.getTopPlayersOverallByPage(page);
+	public Collection<Player> getTopPlayersByCategory(String category,int page){
+		return playerDAO.getTopPlayersByCategory(category,page);
 	}	
 }
