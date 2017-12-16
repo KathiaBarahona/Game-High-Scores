@@ -1,6 +1,7 @@
 package practice.exercise.dao;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -34,10 +35,12 @@ public class PlayerDAO implements IPlayerDAO {
 	 * @return {}
 	 * */
 	@Override
-	public void updatePlayer(Player player) {
-		Player oldPlayer = this.getPlayerById(player.getId());
-		oldPlayer.setName(player.getName()); 
-		entityManager.flush();
+	public void updatePlayer(Player player,long id) {
+		Player oldPlayer = this.getPlayerById(id);
+		if(!Objects.isNull(oldPlayer)) {
+			oldPlayer.setName(player.getName()); 
+			entityManager.flush();
+		}
 	}
 	/*
 	 * deletePlayer method is in charge of delete an existing player from the db

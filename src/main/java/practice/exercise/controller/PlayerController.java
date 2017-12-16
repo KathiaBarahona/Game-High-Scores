@@ -3,6 +3,7 @@ package practice.exercise.controller;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -53,9 +54,20 @@ public class PlayerController {
 		return ResponseEntity.created(location).body("Player was created");
 	}
 
-	@RequestMapping(method = RequestMethod.PUT)
-	public void updatePlayer(@RequestBody Player player) {
-		playerService.updatePlayer(player);
+	@RequestMapping(method = RequestMethod.PUT, value="/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity updatePlayer(@RequestBody Optional<Player> player,@PathVariable("id") long id, Errors errors) {
+		if (errors.hasErrors()) {
+            return ResponseEntity.badRequest().body(ValidatePlayerBuilder.fromBindingErrors(errors));
+        }
+		if (player.isPresent()) {
+			Player p = player.get();
+			if(Objects.isNull(p.getName()) || p.getName().equals("")) {
+				throw new IncorrectParameterException("name");
+			}
+			playerService.updatePlayer(player.get(),id); 
+		}
+		player.orElseThrow(() -> new IncorrectPlayerException());
+		return ResponseEntity.ok().body("Player was updated");
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE)

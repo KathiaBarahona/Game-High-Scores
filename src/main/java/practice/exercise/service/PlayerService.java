@@ -20,8 +20,8 @@ public class PlayerService {
 	public Long createPlayer(Player player) {
 		return playerDAO.createPlayer(player);
 	}
-	public void updatePlayer(Player player) { 
-		playerDAO.updatePlayer(player);
+	public void updatePlayer(Player player,long id) { 
+		playerDAO.updatePlayer(player,id);
 	}
 	public void deletePlayer(long id) {
 		playerDAO.deletePlayer(id);
