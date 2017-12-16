@@ -6,7 +6,7 @@ import practice.exercise.entity.Player;
 
 public interface IPlayerDAO {
 	Long createPlayer(Player player); 
-	void updatePlayer(Player player,long id);
+	boolean updatePlayer(Player player,long id);
 	void deletePlayer(long playerId);
 	void deleteAllPlayers();
 	Player getPlayerById(long id);

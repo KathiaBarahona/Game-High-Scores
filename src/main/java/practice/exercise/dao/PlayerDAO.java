@@ -35,12 +35,14 @@ public class PlayerDAO implements IPlayerDAO {
 	 * @return {}
 	 * */
 	@Override
-	public void updatePlayer(Player player,long id) {
+	public boolean updatePlayer(Player player,long id) {
 		Player oldPlayer = this.getPlayerById(id);
 		if(!Objects.isNull(oldPlayer)) {
 			oldPlayer.setName(player.getName()); 
 			entityManager.flush();
+			return true;
 		}
+		return false;
 	}
 	/*
 	 * deletePlayer method is in charge of delete an existing player from the db

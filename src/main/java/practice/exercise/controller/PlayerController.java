@@ -64,7 +64,10 @@ public class PlayerController {
 			if(Objects.isNull(p.getName()) || p.getName().equals("")) {
 				throw new IncorrectParameterException("name");
 			}
-			playerService.updatePlayer(player.get(),id); 
+			boolean updated = playerService.updatePlayer(player.get(),id); 
+			if(!updated) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player Id not found");
+			}
 		}
 		player.orElseThrow(() -> new IncorrectPlayerException());
 		return ResponseEntity.ok().body("Player was updated");

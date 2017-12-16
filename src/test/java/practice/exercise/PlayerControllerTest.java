@@ -2,6 +2,7 @@ package practice.exercise;
 
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
@@ -69,6 +70,7 @@ public class PlayerControllerTest {
 						new Category(player, "Cooking", (int) (Math.random() * 10), (int) (Math.random() * 10)),
 						new Category(player, "Crafting", (int) (Math.random() * 10), (int) (Math.random() * 10))));
 		player.setCategories(categories);
+		playerDAO.createPlayer(player);
 		
 	}
 	@Test
@@ -95,10 +97,39 @@ public class PlayerControllerTest {
 	}
 	@Test
 	public void createPlayer() throws Exception{
+		Player playerCreate = new Player("Kats Create Test");
+		List<Category> categories = new ArrayList<Category>(
+				Arrays.asList(new Category(playerCreate, "Attack", (int) (Math.random() * 10), (int) (Math.random() * 10)),
+						new Category(playerCreate, "Defense", (int) (Math.random() * 10), (int) (Math.random() * 10)),
+						new Category(playerCreate, "Magic", (int) (Math.random() * 10), (int) (Math.random() * 10)),
+						new Category(playerCreate, "Cooking", (int) (Math.random() * 10), (int) (Math.random() * 10)),
+						new Category(playerCreate, "Crafting", (int) (Math.random() * 10), (int) (Math.random() * 10))));
+		playerCreate.setCategories(categories);
 		mockMvc.perform(post("/players")
-				.content(this.json(this.player))
+				.content(this.json(playerCreate))
 				.contentType(contentType))
     			.andExpect(status().isCreated());
+	}
+	@Test
+	public void updateNonExistentPlayer() throws Exception{
+		mockMvc.perform(put("/players/100")
+				.content(this.json(this.player))
+				.contentType(contentType))
+				.andExpect(status().isNotFound());
+	}
+	@Test
+	public void updatePlayerWithEmptyName() throws Exception{
+		mockMvc.perform(put("/players/1")
+				.content(this.json(new Player("")))
+				.contentType(contentType))
+				.andExpect(status().isBadRequest());
+	}
+	@Test
+	public void updatePlayer() throws Exception{
+		mockMvc.perform(put("/players/1")
+				.content(this.json(new Player("Kats Update")))
+				.contentType(contentType))
+				.andExpect(status().isOk());
 	}
 	protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
