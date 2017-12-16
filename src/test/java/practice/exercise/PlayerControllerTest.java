@@ -2,6 +2,7 @@ package practice.exercise;
 
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -145,6 +146,24 @@ public class PlayerControllerTest {
 				.andExpect(status().isOk());
 	}
 	
+	@Test
+	public void getPlayerById() throws Exception{
+		mockMvc.perform(get("/players/1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
+	@Test
+	public void getTopPlayersOverallWithNoPage() throws Exception{
+		mockMvc.perform(get("/players/overall")
+				.contentType(contentType))
+				.andExpect(status().isBadRequest());
+	}
+	@Test
+	public void getTopPlayersOverallWithPage() throws Exception{
+		mockMvc.perform(get("/players/overall?page=1")
+				.contentType(contentType))
+				.andExpect(status().isOk());
+	}
 	protected String json(Object o) throws IOException {
         MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
         this.mappingJackson2HttpMessageConverter.write(
