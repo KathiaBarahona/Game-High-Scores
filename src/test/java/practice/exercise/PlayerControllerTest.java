@@ -77,7 +77,7 @@ public class PlayerControllerTest {
 	public void createPlayerWithNoName() throws Exception{
 		 mockMvc.perform(post(baseURL)
 				 	.contentType(contentType)
-	                .content(this.json(new Player())))
+	                .content(this.json(new Player(""))))
 	                .andExpect(status().isBadRequest());
 	}
 	
