@@ -80,6 +80,8 @@ public class Player implements Serializable {
 	public String toString() {
 		return "Player [id=" + id + ", name=" + name + ", categories=" + categories + "]";
 	}
+	
+	@Override
 	public boolean equals(Object object) {
         if (object == this)
             return true;
@@ -91,7 +93,11 @@ public class Player implements Serializable {
         if (id != 0 && player.getId() != 0) {
             return id == player.getId();
         }
-        return false;
+        return player.getName().equals(name);
     }
+	@Override
+	public int hashCode() {
+		return name.hashCode()+(int)id;
+	}
 	
 }

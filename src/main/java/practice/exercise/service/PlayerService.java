@@ -3,13 +3,8 @@ package practice.exercise.service;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import practice.exercise.dao.PlayerDAO;
-import practice.exercise.entity.Category;
 import practice.exercise.entity.Player;
 
 @Service
@@ -26,9 +21,7 @@ public class PlayerService {
 	public boolean deletePlayer(long id) {
 		return playerDAO.deletePlayer(id);
 	}
-	public void deleteAllPlayers() {
-		playerDAO.deleteAllPlayers();
-	}
+
 	public Player getPlayerById(long id) {
 		return playerDAO.getPlayerById(id);
 	}

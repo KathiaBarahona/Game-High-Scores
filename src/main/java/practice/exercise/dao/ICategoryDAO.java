@@ -1,10 +1,10 @@
 package practice.exercise.dao;
 
 import java.util.Collection;
-import java.util.List;
+
 
 import practice.exercise.entity.Category;
-import practice.exercise.entity.Player;
+
 
 public interface ICategoryDAO {
 	boolean createCategory(long playerId,Category category);

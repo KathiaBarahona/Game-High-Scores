@@ -1,15 +1,23 @@
 package practice.exercise;
 
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
+
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,133 +25,166 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
-import practice.exercise.dao.PlayerDAO;
+import practice.exercise.controller.CategoryController;
 import practice.exercise.entity.Category;
 import practice.exercise.entity.Player;
+import practice.exercise.service.CategoryService;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = HighScoreBoardApiApplication.class)
 @WebAppConfiguration
 public class CategoryContollerTest {
-	private MediaType contentType = new MediaType(MediaType.APPLICATION_JSON.getType(),
-			MediaType.APPLICATION_JSON.getSubtype(), Charset.forName("utf8"));
+	private MediaType contentType = MediaType.APPLICATION_JSON_UTF8;
 	private String baseURL = "/players/{id}/categories";
+	
 	private MockMvc mockMvc;
-	private String playerName = "kats";
-	private Player player;
-	private Category category;
-	@Autowired
-	private WebApplicationContext webApplicationContext;
-	private HttpMessageConverter mappingJackson2HttpMessageConverter;
-	@Autowired
-	private PlayerDAO playerDAO;
 
-	@Autowired
-	void setConverters(HttpMessageConverter<?>[] converters) {
-
-		this.mappingJackson2HttpMessageConverter = Arrays.asList(converters).stream()
-				.filter(hmc -> hmc instanceof MappingJackson2HttpMessageConverter).findAny().orElse(null);
-
-		assertNotNull("the JSON message converter must not be null", this.mappingJackson2HttpMessageConverter);
-	}
+	@Mock
+	private CategoryService categoryService;
+	
+	@InjectMocks
+	private CategoryController categoryController;
 
 	@Before
 	public void setup() throws Exception {
-		this.mockMvc = webAppContextSetup(webApplicationContext).build();
-		//this.playerService.deleteAllPlayers();
-		this.player = new Player(this.playerName);
-		List<Category> categories = new ArrayList<Category>(
-				Arrays.asList(new Category(player, "Attack", (int) (Math.random() * 10), (int) (Math.random() * 10)),
-						new Category(player, "Defense", (int) (Math.random() * 10), (int) (Math.random() * 10)),
-						new Category(player, "Magic", (int) (Math.random() * 10), (int) (Math.random() * 10)),
-						new Category(player, "Cooking", (int) (Math.random() * 10), (int) (Math.random() * 10))));
-		category = new Category(player, "Crafting", (int) (Math.random() * 10), (int) (Math.random() * 10));
-		categories.add(category);
-		this.player.setCategories(categories);
-		playerDAO.createPlayer(this.player); 
+		MockitoAnnotations.initMocks(this);
+		this.mockMvc  = MockMvcBuilders.standaloneSetup(categoryController).build();	
+		 
 	}
+	//************************** GET TESTS*******************************************//
 	@Test 
 	public void getCategoriesFromNonExistentPlayer() throws Exception{
-		mockMvc.perform(get(baseURL,100)
-				.contentType(contentType))
-				.andExpect(status().isOk());
+		when(categoryService.getAllCategories((long)100)).thenReturn(null);
+		mockMvc.perform(get(baseURL,100))
+				.andExpect(status().isNoContent());
+		verify(categoryService,times(1)).getAllCategories((long)100); 
+		verifyNoMoreInteractions(categoryService);
 	}
+	
 	@Test
 	public void getCategoriesFromPlayer() throws Exception{
-		mockMvc.perform(get(baseURL,this.player.getId())
-				.contentType(contentType))
+		Player player = new Player("Kats Create Test");
+		List<Category> categories = new ArrayList<Category>(
+				Arrays.asList(new Category(player, "Attack", (int) (Math.random() * 10), (int) (Math.random() * 10)),
+						new Category(player, "Defense", (int) (Math.random() * 10), (int) (Math.random() * 10))));
+		player.setCategories(categories);
+		player.setId(1);
+		when(categoryService.getAllCategories(1)).thenReturn(player.getCategories());
+		mockMvc.perform(get(baseURL,1))
+	            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+				.andExpect(jsonPath("$",hasSize(2)))
+				.andExpect(jsonPath("$[0].name",is("Attack")))
+				.andExpect(jsonPath("$[1].name",is("Defense")))
 				.andExpect(status().isOk());
+		verify(categoryService,times(1)).getAllCategories(1); 
+		verifyNoMoreInteractions(categoryService);
 	}
+	
 	@Test
 	public void getNonExistentCategory() throws Exception{
-		mockMvc.perform(get(baseURL+"/{name}",this.player.getId(),"Sleep")
-				.contentType(contentType))
+		when(categoryService.getCategory(1, "Sleep")).thenReturn(null);
+		mockMvc.perform(get(baseURL+"/{name}",1,"Sleep"))
 				.andExpect(status().isNotFound());
+		verify(categoryService,times(1)).getCategory(1, "Sleep");
+		verifyNoMoreInteractions(categoryService);
 	}
+	
 	@Test
 	public void getCategory() throws Exception{
-		mockMvc.perform(get(baseURL+"/{name}",this.player.getId(),"Attack")
-				.contentType(contentType))
-				.andExpect(status().isOk());
+		Player player = new Player("Kats Create Test");
+		List<Category> categories = new ArrayList<Category>(
+				Arrays.asList(new Category(player, "Attack", (int) (Math.random() * 10), (int) (Math.random() * 10)),
+						new Category(player, "Defense", (int) (Math.random() * 10), (int) (Math.random() * 10))));
+		player.setCategories(categories);
+		player.setId(1);
+		when(categoryService.getCategory(1, "Attack")).thenReturn(player.getCategories().get(0));
+		mockMvc.perform(get(baseURL+"/{name}",1,"Attack"))
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+		    	.andExpect(status().isOk())
+		    	.andExpect(jsonPath("$.name",is("Attack")));
+		verify(categoryService,times(1)).getCategory(1, "Attack");
+		verifyNoMoreInteractions(categoryService);
 	}
-	@Test
-	public void createDuplicatedCategory() throws Exception{
-		mockMvc.perform(post(baseURL,this.player.getId())
-				.content(this.json(new Category("Attack",0,0)))
-				.contentType(contentType))
-				.andExpect(status().isBadRequest());
-	}
+	
+	//************************************** POST REQUESTS *********************************************
 	@Test
 	public void createCategory() throws Exception{
-		mockMvc.perform(post(baseURL,this.player.getId())
-				.content(this.json(new Category("Sleep",0,0)))
-				.contentType(contentType))
+		Category category = new Category("Sleep",0,0);
+		when(categoryService.createCategory(1, category)).thenReturn(true);
+		mockMvc.perform(post(baseURL,1)
+				.contentType(contentType)
+				.content(this.json(category)))
 				.andExpect(status().isCreated());
+		verify(categoryService,times(1)).createCategory(1, category);
+		verifyNoMoreInteractions(categoryService);
 	} 
+	
+	//************************************ UPDATE REQUESTS **********************************************
 	@Test
 	public void updateNonExistentCategory() throws Exception{
-		Category categoryUpdate = new Category("Sleep",0,0);
-		mockMvc.perform(put(baseURL+"/{name}", this.player.getId(),"Sleep")
-				.content(this.json(categoryUpdate))
+		Category category = new Category("Sleep",0,0);
+		Category initial = new Category("Sleep",0,0);
+		when(categoryService.updateCategory(1, category)).thenReturn(false);
+		mockMvc.perform(put(baseURL+"/{name}", 1,"Sleep")
+				.content(this.json(category))
 				.contentType(contentType))
 				.andExpect(status().isNotFound());
+		verify(categoryService,times(1)).updateCategory(1, category);
+		verifyNoMoreInteractions(categoryService);
 	}
 	@Test
 	public void updateCategory() throws Exception{
-		this.mockMvc.perform(put(baseURL+"/{name}",this.category.getPlayer().getId(),"Attack")
-				.content(this.json(new Category("Attack",0,0)))
+		Category category = new Category("Attack",0,0);
+		doReturn(true).when(categoryService).updateCategory(1, category);
+		//when(categoryService.updateCategory(1, category)).thenReturn(true);
+		this.mockMvc.perform(put(baseURL+"/{name}",1,"Attack")
+				.content(this.json(category))
 				.contentType(contentType))
-				.andExpect(status().isOk());
+				.andExpect(status().isOk()); 
+		verify(categoryService,times(1)).updateCategory(1, category);
+		verifyNoMoreInteractions(categoryService);
 	}
+	//********************************DELETE REQUESTS *****************************************
 	@Test
 	public void deleteNonExistentCategory() throws Exception{
-		mockMvc.perform(delete(baseURL+"/{name}",this.player.getId(),"Sleep")
+		when(categoryService.deleteCategory(1, "Sleep")).thenReturn(false);
+		mockMvc.perform(delete(baseURL+"/{name}",1,"Sleep")
 				.contentType(contentType))
 				.andExpect(status().isNotFound());
+		verify(categoryService,times(1)).deleteCategory(1, "Sleep");
+		verifyNoMoreInteractions(categoryService);
 	}
 	@Test
 	public void deleteCategory() throws Exception{
-		mockMvc.perform(delete(baseURL+"/{name}",this.player.getId(),"Defense")
+		when(categoryService.deleteCategory(1, "Defense")).thenReturn(true);
+		mockMvc.perform(delete(baseURL+"/{name}",1,"Defense")
 				.contentType(contentType))
 				.andExpect(status().isOk());
+		verify(categoryService,times(1)).deleteCategory(1, "Defense");
+		verifyNoMoreInteractions(categoryService);
 	}
+	
+	
 	protected String json(Object o) throws IOException {
-		 try {
-		        return new ObjectMapper().writeValueAsString(o);
-		    } catch (Exception e) {
-		        throw new RuntimeException(e);
-		    }
-    }
+		 ObjectMapper mapper = new ObjectMapper();
+		    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+		    ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();
+		    String requestJson=ow.writeValueAsString(o);
+       return requestJson;
+   }
 }

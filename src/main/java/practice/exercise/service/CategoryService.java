@@ -16,8 +16,6 @@ public class CategoryService {
 		return categoryDAO.createCategory(playerId, category);
 	}
 	public boolean updateCategory(long playerId,Category category) {
-		System.out.println("Service");
-		System.out.println(category);
 		return categoryDAO.updateCategory(playerId, category);
 	}
 	public Category getCategory(long playerId,String name) {

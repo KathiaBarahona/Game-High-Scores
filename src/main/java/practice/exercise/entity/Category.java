@@ -1,6 +1,7 @@
 package practice.exercise.entity;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -85,23 +86,32 @@ public class Category implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "Category [name=" + name + ", level=" + level + ", experience=" + experience + ", player=" + player.getName()
-				+ "]";
+		if(!Objects.isNull(this.player)) {
+			return "Category [name=" + name + ", level=" + level + ", experience=" + experience + ", player=" + player.getName() + "]";
+		}
+		return "Category [name=" + name + ", level=" + level + ", experience=" + experience +"]";
 	}
-
+	@Override
 	public boolean equals(Object object) {
         if (object == this)
             return true;
-        if ((object == null) || !(object instanceof Player))
+        if ((object == null) || !(object instanceof Category))
             return false;
  
         final Category category = (Category)object;
  
-        if (player != null && name != "") {
+        if (player != null && category.getPlayer() != null ) {
             return player.equals(category.getPlayer()) && name == category.getName();
+        }else {
+        	return name == category.getName();
         }
-        return false;
     }
+	public int hashCode() {
+		if(Objects.isNull(player)) {
+			return name.hashCode();
+		}
+		return name.hashCode() + player.hashCode();
+	}
 	
 	
 }
