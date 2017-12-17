@@ -57,6 +57,8 @@ public class CategoryDAO implements ICategoryDAO{
 	@Override
 	public boolean updateCategory(long playerId, Category category) {
 		Category oldCategory = this.getCategory(playerId, category.getName());
+		System.out.println(oldCategory);
+		System.out.println(Objects.isNull(oldCategory));
 		if(!Objects.isNull(oldCategory)) {
 			if(!Objects.isNull(category.getExperience())) {
 				oldCategory.setExperience(category.getExperience());
