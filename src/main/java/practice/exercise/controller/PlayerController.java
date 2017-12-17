@@ -1,6 +1,5 @@
 package practice.exercise.controller;
 
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,7 +46,7 @@ public class PlayerController {
 //********************************POST REQUEST**************************************************
 	
 	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<ValidateError> createPlayer(@Valid @RequestBody Optional<Player> player, Errors errors, UriComponentsBuilder ucBuilder) throws URISyntaxException {
+	public ResponseEntity<ValidateError> createPlayer(@Valid @RequestBody Optional<Player> player, Errors errors, UriComponentsBuilder ucBuilder) {
 		LOG.info("Creating a new player...");
 		if (errors.hasErrors()) {
 			LOG.info("The following errors were found: {}",errors);
@@ -74,7 +73,7 @@ public class PlayerController {
 	public ResponseEntity<Object> updatePlayer(@RequestBody Optional<Player> player,@PathVariable("id") long id, Errors errors) {
 		LOG.info("Player with id {} is to be updated ",id);
 		if (errors.hasErrors()) {
-			LOG.info("The following errors where found: "+errors);
+			LOG.info("The following errors were found: "+errors);
 			return new ResponseEntity<Object>(ValidateErrorBuilder.fromBindingErrors(errors),HttpStatus.BAD_REQUEST);
         }
 		if (player.isPresent()) {
