@@ -114,7 +114,7 @@ public class PlayerController {
 		LOG.info("Getting players by name {}");
 		if (name.isPresent()) {
 			Collection<Player> player = playerService.getPlayersByName(name.get());
-			if(player.size() == 0) {
+			if(player == null || player.size() == 0) {
 				LOG.info("No player where found for name {} ",name.get());
 				return new ResponseEntity<Collection<Player>>(HttpStatus.NO_CONTENT);
 			}
