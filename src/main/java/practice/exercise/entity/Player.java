@@ -80,24 +80,39 @@ public class Player implements Serializable {
 	public String toString() {
 		return "Player [id=" + id + ", name=" + name + ", categories=" + categories + "]";
 	}
-	
-	@Override
-	public boolean equals(Object object) {
-        if (object == this)
-            return true;
-        if ((object == null) || !(object instanceof Player))
-            return false;
- 
-        final Player player = (Player)object;
- 
-        if (id != 0 && player.getId() != 0) {
-            return id == player.getId();
-        }
-        return player.getName().equals(name);
-    }
+
 	@Override
 	public int hashCode() {
-		return name.hashCode()+(int)id;
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((categories == null) ? 0 : categories.hashCode());
+		result = prime * result + (int) (id ^ (id >>> 32));
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Player other = (Player) obj;
+		if (categories == null) {
+			if (other.categories != null)
+				return false;
+		}
+		if (id != other.id)
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+	
 	
 }

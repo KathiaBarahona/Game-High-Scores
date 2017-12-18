@@ -92,25 +92,45 @@ public class Category implements Serializable {
 		return "Category [name=" + name + ", level=" + level + ", experience=" + experience +"]";
 	}
 	@Override
-	public boolean equals(Object object) {
-        if (object == this)
-            return true;
-        if ((object == null) || !(object instanceof Category))
-            return false;
- 
-        final Category category = (Category)object;
- 
-        if (player != null && category.getPlayer() != null ) {
-            return player.equals(category.getPlayer()) && name == category.getName();
-        }else {
-        	return name == category.getName();
-        }
-    }
 	public int hashCode() {
-		if(Objects.isNull(player)) {
-			return name.hashCode();
-		}
-		return name.hashCode() + player.hashCode();
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((experience == null) ? 0 : experience.hashCode());
+		result = prime * result + ((level == null) ? 0 : level.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((player == null) ? 0 : player.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Category other = (Category) obj;
+		if (experience == null) {
+			if (other.experience != null)
+				return false;
+		} else if (!experience.equals(other.experience))
+			return false;
+		if (level == null) {
+			if (other.level != null)
+				return false;
+		} else if (!level.equals(other.level))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (player == null) {
+			if (other.player != null)
+				return false;
+		} else if (!player.equals(other.player))
+			return false;
+		return true;
 	}
 	
 	
